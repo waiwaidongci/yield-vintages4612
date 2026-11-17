@@ -4,21 +4,23 @@ from src.config.database import database
 from src.controllers.auth import current,editor,admin
 from src.models.run import Run
 from src.schemas.requests import RunInput,ReviewInput
-from src.services.report import submit,approve
+from src.services.report import submit,approve,retry
 from src.services.export import csv_text
-from src.utils.serialize import row
+from src.utils.serialize import run_view
 router=APIRouter()
 @router.get('/runs')
-def runs(db=Depends(database),u=Depends(current)): return [row(x) for x in db.query(Run).order_by(Run.id.desc()).all()]
+def runs(db=Depends(database),u=Depends(current)): return [run_view(x) for x in db.query(Run).order_by(Run.id.desc()).all()]
 @router.post('/runs')
-def create(b:RunInput,db=Depends(database),u=Depends(editor)): return row(submit(db,u,b))
+def create(b:RunInput,db=Depends(database),u=Depends(editor)): return run_view(submit(db,u,b))
 @router.get('/runs/{id}')
 def detail(id:int,db=Depends(database),u=Depends(current)):
  obj=db.get(Run,id)
  if not obj: raise HTTPException(404,'报告不存在')
- return row(obj)
+ return run_view(obj)
 @router.post('/runs/{id}/approve')
-def review(id:int,b:ReviewInput,db=Depends(database),u=Depends(admin)): return row(approve(db,u,id,b.note))
+def review(id:int,b:ReviewInput,db=Depends(database),u=Depends(admin)): return run_view(approve(db,u,id,b.note))
+@router.post('/runs/{id}/retry')
+def restart(id:int,db=Depends(database),u=Depends(editor)): return run_view(retry(db,u,id))
 @router.get('/runs/{id}/csv')
 def download(id:int,db=Depends(database),u=Depends(current)):
  obj=db.get(Run,id)

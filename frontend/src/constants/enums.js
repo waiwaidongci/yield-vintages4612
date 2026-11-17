@@ -1,1 +1,1 @@
-export const ROLES=['admin','analyst','viewer'];export const STATUSES={queued:'排队中',running:'计算中',completed:'已完成',failed:'失败'};
+export const ROLES=['admin','analyst','viewer'];export const STATUSES={queued:'排队中',freezing:'冻结中',frozen:'已冻结',calculating:'计算中',running:'计算中',completed:'已完成',failed:'失败'};export const ACTIVE=['queued','freezing','frozen','calculating','running'];

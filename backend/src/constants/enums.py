@@ -1,2 +1,2 @@
 ROLES=('admin','analyst','viewer')
-STATUSES=('queued','running','completed','failed')
+STATUSES=('queued','freezing','frozen','calculating','running','completed','failed')

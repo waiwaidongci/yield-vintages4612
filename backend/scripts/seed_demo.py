@@ -1,8 +1,8 @@
-import json,random
+import json,random,time
 from src.config.database import Base,engine,Session
 from src.config.settings import CONFIG
 from src.models.identity import User
-from src.models.source import Source,Policy,Period
+from src.models.source import Source,Policy,Period,SourceVersion
 from src.models import run
 from src.utils.security import password_hash
 from src.services.validation import validate_source
@@ -23,7 +23,11 @@ def seed():
    if not db.query(Period).filter_by(name=name).first():db.add(Period(name=name,description='合成演示业务期间，seed=42'))
   for i,data in enumerate(rows):
    validate_source(data);key='demo-'+str(i+1)
-   if not db.query(Source).filter_by(natural_key=key).first():db.add(Source(natural_key=key,data=data))
+   src=db.query(Source).filter_by(natural_key=key).first()
+   if not src:
+    src=Source(natural_key=key,data=data);db.add(src);db.flush()
+   if not db.query(SourceVersion).filter_by(lot_id=src.id).first():
+    db.add(SourceVersion(lot_id=src.id,natural_key=key,data=data,deleted=False,created=time.time()))
   if not db.query(Policy).filter_by(version=CONFIG['policy']['version']).first():db.add(Policy(version=CONFIG['policy']['version'],data=CONFIG['policy']))
-  db.commit();print(json.dumps({'users':db.query(User).count(),'sources':db.query(Source).count(),'policies':db.query(Policy).count(),'periods':db.query(Period).count()},ensure_ascii=False))
+  db.commit();print(json.dumps({'users':db.query(User).count(),'sources':db.query(Source).count(),'versions':db.query(SourceVersion).count(),'policies':db.query(Policy).count(),'periods':db.query(Period).count()},ensure_ascii=False))
 if __name__=='__main__':seed()
